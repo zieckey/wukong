@@ -158,6 +158,7 @@ func (indexer *Indexer) Lookup(
 			// 否则加入反向表中
 			table[i] = indices
 		}
+		log.Printf("%v found=%v", keyword, found)
 	}
 
 	// 当没有找到时直接返回

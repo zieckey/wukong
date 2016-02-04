@@ -2,6 +2,7 @@ package engine
 
 import (
 	"github.com/huichen/wukong/types"
+	"log"
 )
 
 type segmenterRequest struct {
@@ -25,6 +26,12 @@ func (engine *Engine) segmenterWorker() {
 				if !engine.stopTokens.IsStopToken(token) {
 					tokensMap[token] = append(tokensMap[token], segment.Start())
 				}
+
+				//TODO 是否需要遍历 segment.Token().Segments()
+				// 该分词文本可以进一步进行分词划分，比如"中华人民共和国中央人民政府"这个分词
+				// 有两个子分词"中华人民共和国"和"中央人民政府"。子分词也可以进一步有子分词
+				// 形成一个树结构，遍历这个树就可以得到该分词的所有细致分词划分，这主要
+				// 用于搜索引擎对一段文本进行全文搜索。
 			}
 			numTokens = len(segments)
 		} else {
@@ -56,6 +63,7 @@ func (engine *Engine) segmenterWorker() {
 			},
 		}
 		iTokens := 0
+		tokens := ""
 		for k, v := range tokensMap {
 			indexerRequest.document.Keywords[iTokens] = types.KeywordIndex{
 				Text: k,
@@ -63,8 +71,13 @@ func (engine *Engine) segmenterWorker() {
 				Frequency: float32(len(v)),
 				Starts:    v}
 			iTokens++
+			tokens += k
+			tokens += "|"
 		}
+		log.Printf("tokens=[%v] %v", tokens, request.data.Content)
 		engine.indexerAddDocumentChannels[shard] <- indexerRequest
+
+		//TODO 是否应该加入 request.data.Fields != nil 的判断才做这个操作？？
 		rankerRequest := rankerAddDocRequest{
 			docId: request.docId, fields: request.data.Fields}
 		engine.rankerAddDocChannels[shard] <- rankerRequest

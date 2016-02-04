@@ -309,6 +309,8 @@ func (engine *Engine) Search(request types.SearchRequest) (output types.SearchRe
 		}
 	}
 
+	log.Printf("token:%v", tokens)
+
 	// 建立排序器返回的通信通道
 	rankerReturnChannel := make(
 		chan rankerReturnRequest, engine.initOptions.NumShards)
@@ -364,6 +366,8 @@ func (engine *Engine) Search(request types.SearchRequest) (output types.SearchRe
 		}
 	}
 
+	log.Printf("numDocs=%d", numDocs)
+
 	// 再排序
 	if !request.CountDocsOnly && !request.Orderless {
 		if rankOptions.ReverseOrder {
@@ -409,5 +413,6 @@ func (engine *Engine) Close() {
 
 // 从文本hash得到要分配到的shard
 func (engine *Engine) getShard(hash uint32) int {
+	//TODO 为什么不是直接取模？
 	return int(hash - hash/uint32(engine.initOptions.NumShards)*uint32(engine.initOptions.NumShards))
 }

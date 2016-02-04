@@ -33,6 +33,8 @@ func (ranker *Ranker) AddDoc(docId uint64, fields interface{}) {
 		log.Fatal("排序器尚未初始化")
 	}
 
+	// TODO 这里应该检查 fields 是否为nil。 或者说，应该将检查提前到更上层：分词的地方？
+
 	ranker.lock.Lock()
 	ranker.lock.fields[docId] = fields
 	ranker.lock.docs[docId] = true
